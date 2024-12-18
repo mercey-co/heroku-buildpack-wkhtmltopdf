@@ -11,17 +11,18 @@ TMP_PATH="$BUILD_DIR/tmp"
 LIB_PATH="$BUILD_DIR/vendor/wkhtmltox/lib"
 mkdir -p $CACHE_DIR $BIN_PATH $TMP_PATH $LIB_PATH
                  
-
 if [ "$STACK" == "heroku-18" ]; then
   UBUNTU_VERSION="bionic"
 elif [ "$STACK" == "heroku-20" ]; then
   UBUNTU_VERSION="focal"
-elif [ "$STACK" == "heroku-22" ]; then
+elif [ "$STACK" == "heroku-22" ] || [ "$STACK" == "heroku-24" ]; then
   UBUNTU_VERSION="jammy"
 fi
 
-WKHTMLTOPDF_URL="https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6.1-2/wkhtmltox_0.12.6.1-2.${UBUNTU_VERSION}_amd64.deb"
-WKHTMLTOPDF_PKG="$CACHE_DIR/wkhtmltopdf.deb"
+WKHTMLTOPDF_VERSION='0.12.6.1-2'
+WKHTMLTOPDF_FILENAME="wkhtmltox_${WKHTMLTOPDF_VERSION}.${UBUNTU_VERSION}_amd64.deb"
+WKHTMLTOPDF_URL="https://github.com/wkhtmltopdf/packaging/releases/download/${WKHTMLTOPDF_VERSION}/${WKHTMLTOPDF_FILENAME}"
+WKHTMLTOPDF_PKG="$CACHE_DIR/${WKHTMLTOPDF_FILENAME}"
 WKHTMLTOPDF_PATH="$TMP_PATH/wkhtmltopdf"
 WKHTMLTOPDF_BINARIES="$WKHTMLTOPDF_PATH/usr/local/bin"
 WKHTMLTOPDF_LIBS="$WKHTMLTOPDF_PATH/usr/local/lib"
@@ -33,6 +34,10 @@ if [ -f $WKHTMLTOPDF_PKG ]; then
   echo "-----> Using wkhtmltopdf Debian package from cache"
 else
   echo "-----> Downloading wkhtmltopdf Debian package from ${WKHTMLTOPDF_URL}"
+
+  # Remove previously cached packages - we might have just had a stack upgrade.
+  rm -f $CACHE_DIR/wkhtmltopdf*.deb
+
   curl -L $WKHTMLTOPDF_URL -o $WKHTMLTOPDF_PKG
 fi
 
